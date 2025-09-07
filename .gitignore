@@ -1,0 +1,18 @@
+# uv lock file
+uv.lock
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Byte-compiled Python files
+__pycache__/
+*.pyc
+
+# Distribution and build artifacts
+dist/
+build/
+*.egg-info/
+
+output/
