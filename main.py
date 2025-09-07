@@ -39,8 +39,8 @@ def main():
                 print("### " + e["lesson"]["name"], e["theme"]["name"] + "\n", sep=" - ")
                 lesson_id = e["theme"]["id"]
 
+                is_files: bool = False
                 for task in e["homework_tasks"]:
-                    is_files: bool = False
                     if task["is_files"]:
                         is_files = True
                         if e["class_group_id"]:
