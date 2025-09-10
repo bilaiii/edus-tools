@@ -62,6 +62,7 @@ def main():
                                     print("- [ ] " + material["description"] + ":", files_string)
                                 else:
                                     print("- [ ] " + material["description"])
+                prev_date = e["prepare_till"]
                 if is_files:
                     print()
                     continue
@@ -69,7 +70,6 @@ def main():
                     for task in e["homework_tasks"]:
                         print("- [ ] " + task["title"])        
     
-                prev_date = e["prepare_till"]
                 print()
                         
     class Url:
