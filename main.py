@@ -43,33 +43,30 @@ def main():
                 for task in e["homework_tasks"]:
                     if task["is_files"]:
                         is_files = True
-                        if e["class_group_id"]:
-                            lesson_url = base_url + f'/teacher/lesson-planning-theme/details/{lesson_id}/?filter_class_group={e["class_group_id"]}&is_student=true'
-                        else:
-                            lesson_url = base_url + f'/teacher/lesson-planning-theme/details/{lesson_id}/?filter_class={e["class_id"]}&is_student=true'
-                        request = requests.get(lesson_url, headers=self.header_auth)
-                        json = request.json()
-                        for material in json["materials"]:
-                            if material["type"] == 2:
-                                if material["files"]:
-                                    files = []
-                                    for file in material["files"]:
-                                        if file["file_url"]:
-                                            files.append(file["file_url"])
-                                        if file["external_url"]:
-                                            files.append(file["external_url"])
-                                    files_string = ", ".join(files)
-                                    print("- [ ] " + material["description"] + ":", files_string)
-                                else:
-                                    print("- [ ] " + material["description"])
-                prev_date = e["prepare_till"]
                 if is_files:
-                    print()
-                    continue
+                    if e["class_group_id"]:
+                        lesson_url = base_url + f'/teacher/lesson-planning-theme/details/{lesson_id}/?filter_class_group={e["class_group_id"]}&is_student=true'
+                    else:
+                        lesson_url = base_url + f'/teacher/lesson-planning-theme/details/{lesson_id}/?filter_class={e["class_id"]}&is_student=true'
+                    request = requests.get(lesson_url, headers=self.header_auth)
+                    json = request.json()
+                    for material in json["materials"]:
+                        if material["type"] == 2:
+                            if material["files"]:
+                                files = []
+                                for file in material["files"]:
+                                    if file["file_url"]:
+                                        files.append(file["file_url"])
+                                    if file["external_url"]:
+                                        files.append(file["external_url"])
+                                files_string = ", ".join(files)
+                                print("- [ ] " + material["description"] + ":", files_string)
+                            else:
+                                print("- [ ] " + material["description"])
                 else:
                     for task in e["homework_tasks"]:
                         print("- [ ] " + task["title"])        
-    
+                prev_date = e["prepare_till"]
                 print()
                         
     class Url:
