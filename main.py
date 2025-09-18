@@ -1,5 +1,6 @@
 import requests
-# import json
+import getpass
+import json
 from dotenv import load_dotenv
 from os import getenv
 
@@ -27,8 +28,30 @@ def main():
             request = requests.get(self.url.homework, headers=self.header_auth)
             homework_json = request.json()
             return homework_json
+        def get_notifications(self):
+            request = requests.get(self.url.notifications, headers=self.header_auth)
+            notifications_json = request.json()
+            return notifications_json
+        def pretty_notifications(self):
+            json = self.get_notifications()
+            results = json["results"]
+            gendered_words = {
+                1: "Оцінив",
+                2: "Оцінила"
+            }
+            for result in results:
+                relation_type = result["relation_type"]
+                relation_object = result["relation_object"]
+                sender = result["from_user"]
+                if relation_type == "journalscore":
+                    subject = relation_object.get('lesson', {}).get('name')
+                    score_type = relation_object.get('score_type', {}).get('name')
+                    score = relation_object.get('score')
+                    comment = relation_object.get('teacher_comment')
+                    sender_gender = sender.get('gender')
+                    sender_name = sender.get('username')
+                    print(f'{subject} ({sender_name}) {gendered_words[sender_gender]} {score_type}: {score}, {comment}')
         def pretty_homework(self):
-            print()
             json = self.get_homework()
             prev_date = ""
             
@@ -43,6 +66,7 @@ def main():
                 for task in e["homework_tasks"]:
                     if task["is_files"]:
                         is_files = True
+                        continue
                 if is_files:
                     if e["class_group_id"]:
                         lesson_url = base_url + f'/teacher/lesson-planning-theme/details/{lesson_id}/?filter_class_group={e["class_group_id"]}&is_student=true'
@@ -78,25 +102,53 @@ def main():
             self.account = base_url + f'/student/account/{user.uuid}/'
     # <-- End of class definitions
 
-    # AUTH -->
-    load_dotenv()
-    login = getenv("LOGIN")
-    password = getenv("PASSWORD")
-    login_data = {
-        "login": login,
-        "password": password
-    }
+    def login_function():
+        # AUTH -->
+        load_dotenv()
+        login = getenv("LOGIN")
+        password = getenv("PASSWORD")
+        if login is None or password is None:
+            print()
+            print("--- please login ---")
+            login = input("Your login (Name, Email): ")
+            password = getpass.getpass("Your password: ")
+            with open(".env", "w") as file:
+                file.write(f'LOGIN="{login}"\n'
+                           f'PASSWORD="{password}"')
+            
+        login_data = {
+            "login": login,
+            "password": password
+        }
 
-    dummy_file = {
-        'upload_field_name': ('my_dummy_file.txt', b'Dummy content.', 'text/plain')
-    }
-    
-    res_auth = requests.post(url_auth, data=login_data, files=dummy_file)  
-    auth_json = res_auth.json()
-    # End of AUTH
+        dummy_file = {
+            'upload_field_name': ('my_dummy_file.txt', b'Dummy content.', 'text/plain')
+        }
+        print("Logging you in...")
+        res_auth = requests.post(url_auth, data=login_data, files=dummy_file)  
+        auth_json = res_auth.json()
+        if res_auth.status_code == 200:
+            print("Login successful!")
+        # End of AUTH
 
-    user = User(auth_json["uuid"], auth_json["access"], auth_json["refresh"])
-
+        return auth_json
+    def menu():
+        with open("logo.txt","r") as file:
+            logo = file.read()
+            print()
+            print(logo)
+            print("""What do you want to do today?
+1. See my notifications
+2. Get a list of my homework tasks\n""")
+            inp = input("Choose: ")
+            print()
+            if "1" in inp:
+                user.pretty_notifications()
+            elif "2" in inp:
+                user.pretty_homework()
+    auth = login_function()
+    user = User(auth["uuid"], auth["access"], auth["refresh"])
+    menu()
     # res_homework = requests.get(user.url.homework, headers=user.header_auth)
     # homework_json = res_homework.json()
 
@@ -104,6 +156,7 @@ def main():
     #     homework_file.write(json.dumps(homework_json, indent=2, ensure_ascii=False))
         
     # print(json.dumps(homework_json["next"][1], indent=2, ensure_ascii=False))
-    user.pretty_homework()
+    # user.pretty_homework()
+    # print(json.dumps(user.get_notifications(), indent=2, ensure_ascii=False))
 if __name__ == "__main__":
     main()
