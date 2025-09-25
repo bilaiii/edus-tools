@@ -122,7 +122,7 @@ def main():
             }
 
             with open("passwords.json", "w") as file:
-                json.dump(login_data, file)
+                json.dump(login_data, file, ensure_ascii=False)
                             
         dummy_file = {
             'upload_field_name': ('my_dummy_file.txt', b'Dummy content.', 'text/plain')
