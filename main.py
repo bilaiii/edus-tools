@@ -1,6 +1,8 @@
 import requests
 import getpass
 import json
+import os
+from rich import print
 
 def main():
 
@@ -48,16 +50,18 @@ def main():
                     comment = relation_object.get('teacher_comment')
                     sender_gender = sender.get('gender')
                     sender_name = sender.get('username')
-                    print(f'{subject} ({sender_name}) {gendered_words[sender_gender]} {score_type}: {score}, {comment}')
+                    print(f'{subject} ({sender_name}) {gendered_words[sender_gender]} {score_type}: {score}, {comment}\n')
         def pretty_homework(self):
             json = self.get_homework()
             prev_date = ""
             
             for e in json["next"]:
                 if e["prepare_till"] != prev_date:
-                    print("## " + e["prepare_till"] + "\n")
+                    print("[black]"+"-"*term_width())
+                    print()
+                    print("[red][bold]" + e["prepare_till"] + "\n")
 
-                print("### " + e["lesson"]["name"], e["theme"]["name"] + "\n", sep=" - ")
+                print("[magenta]"+ e["lesson"]["name"] +" [black]- "+ "[magenta]"+e["theme"]["name"] + "\n")
                 lesson_id = e["theme"]["id"]
 
                 is_files: bool = False
@@ -82,12 +86,12 @@ def main():
                                     if file["external_url"]:
                                         files.append(file["external_url"])
                                 files_string = ", ".join(files)
-                                print("- [ ] " + material["description"] + ":", files_string)
+                                print("[yellow]- [ ] [/yellow]" + material["description"] + ":", files_string)
                             else:
-                                print("- [ ] " + material["description"])
+                                print("[yellow]- [ ] [/yellow]" + material["description"])
                 else:
                     for task in e["homework_tasks"]:
-                        print("- [ ] " + task["title"])        
+                        print("[yellow]- [ ] [/yellow]" + task["title"])        
                 prev_date = e["prepare_till"]
                 print()
                         
@@ -128,17 +132,33 @@ def main():
         auth_json = res_auth.json()
         if res_auth.status_code == 200:
             print("Login successful!")
+        else:
+            print("[red]ERR: Login unsuccessful, no error handling has been implemented yet")
+            quit()
         # End of AUTH
 
         return auth_json
+
+    def term_width():
+        try:
+            size = os.get_terminal_size()
+            return size.columns
+        except OSError:
+            return 80
+    
     def menu():
         with open("logo.txt","r") as file:
             logo = file.read()
+        print()
+        print("[white]"+logo)
+        inp = ""
+        while "q" not in inp:
+            print("[black]"+"-"*term_width())
             print()
-            print(logo)
             print("""What do you want to do today?
 1. See my notifications
-2. Get a list of my homework tasks\n""")
+2. Get a list of my homework tasks
+Or input "q" to quit\n""")
             inp = input("Choose: ")
             print()
             if "1" in inp:
