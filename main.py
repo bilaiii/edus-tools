@@ -1,8 +1,6 @@
 import requests
 import getpass
 import json
-from dotenv import load_dotenv
-from os import getenv
 
 def main():
 
@@ -104,23 +102,24 @@ def main():
 
     def login_function():
         # AUTH -->
-        load_dotenv()
-        login = getenv("LOGIN")
-        password = getenv("PASSWORD")
-        if login is None or password is None:
+
+        try:
+            with open("passwords.json", "r") as file:
+                login_data = json.load(file)
+        except FileNotFoundError:
             print()
             print("--- please login ---")
             login = input("Your login (Name, Email): ")
             password = getpass.getpass("Your password: ")
-            with open(".env", "w") as file:
-                file.write(f'LOGIN="{login}"\n'
-                           f'PASSWORD="{password}"')
-            
-        login_data = {
-            "login": login,
-            "password": password
-        }
 
+            login_data = {
+                "login": login,
+                "password": password
+            }
+
+            with open("passwords.json", "w") as file:
+                json.dump(login_data, file)
+                            
         dummy_file = {
             'upload_field_name': ('my_dummy_file.txt', b'Dummy content.', 'text/plain')
         }
