@@ -115,6 +115,7 @@ def main():
             print("--- please login ---")
             login = input("Your login (Name, Email): ")
             password = getpass.getpass("Your password: ")
+            print()
 
             login_data = {
                 "login": login,
